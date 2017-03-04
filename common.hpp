@@ -1,9 +1,12 @@
-#ifndef __COMMON_H__
-#define __COMMON_H__
+#pragma once
 
 enum Side { 
     WHITE, BLACK
 };
+
+Side other_side(Side side) {
+    return side == WHITE ? BLACK : WHITE;
+}
 
 class Move {
    
@@ -21,5 +24,3 @@ public:
     void setX(int x) { this->x = x; }
     void setY(int y) { this->y = y; }
 };
-
-#endif

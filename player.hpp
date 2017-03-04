@@ -1,15 +1,18 @@
-#ifndef __PLAYER_H__
-#define __PLAYER_H__
+#pragma once
 
-#include <iostream>
 #include "common.hpp"
 #include "board.hpp"
+#include <iostream>
+
 using namespace std;
 
 class Player {
+private:
+    Board* board;
+    Side side;
 
 public:
-    Player(Side side);
+    Player(Side side_in);
     ~Player();
 
     Move *doMove(Move *opponentsMove, int msLeft);
@@ -17,5 +20,3 @@ public:
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
 };
-
-#endif
