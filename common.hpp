@@ -4,9 +4,8 @@ enum Side {
     WHITE, BLACK
 };
 
-Side other_side(Side side) {
-    return side == WHITE ? BLACK : WHITE;
-}
+#define OTHER_SIDE(side)    \
+    (side == WHITE ? BLACK : WHITE)
 
 class Move {
    

@@ -40,8 +40,8 @@ Player::~Player()
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft)
 {
-    if(board->checkMove(opponentsMove, other_side(side)))
-        board->doMove(opponentsMove, other_side(side));
+    if(board->checkMove(opponentsMove, OTHER_SIDE(side)))
+        board->doMove(opponentsMove, OTHER_SIDE(side));
 
     Move move(0, 0);
     bool did_move = false;
