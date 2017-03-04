@@ -74,8 +74,8 @@ bool Board::checkMove(Move *m, Side side) {
     // Passing is only legal if you have no moves.
     if (m == nullptr) return !hasMoves(side);
 
-    int X = m->getX();
-    int Y = m->getY();
+    int X = m->get_x();
+    int Y = m->get_y();
 
     // Make sure the square hasn't already been taken.
     if (occupied(X, Y)) return false;
@@ -111,8 +111,8 @@ void Board::doMove(Move *m, Side side) {
     // Ignore if move is invalid.
     if (!checkMove(m, side)) return;
 
-    int X = m->getX();
-    int Y = m->getY();
+    int X = m->get_x();
+    int Y = m->get_y();
     Side other = (side == BLACK) ? WHITE : BLACK;
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
