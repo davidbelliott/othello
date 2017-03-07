@@ -2,7 +2,6 @@
 
 #include "common.hpp"
 #include "board.hpp"
-#include "othello_node.hpp"
 #include <iostream>
 #include <vector>
 
@@ -12,12 +11,16 @@ class Player {
 private:
     Board* board;
     Side side;
-    OthelloNode* root;
 
 public:
     Player(Side side_in);
     ~Player();
 
+    double minimax(Board* board, int depth, bool maximizing);
+
+    int parity_heuristic(Board* board, Side move_side);
+    int edge_heuristic(Board* board, Side move_side);
+    double heuristic(Board* board, Side move_side);
 
 //    std::pair<double, Move*> minimax(Board* board, int depth, Side max_side, bool maximizing);
 
