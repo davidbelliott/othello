@@ -2,7 +2,9 @@
 
 #include "common.hpp"
 #include "board.hpp"
+#include "othello_node.hpp"
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -10,12 +12,14 @@ class Player {
 private:
     Board* board;
     Side side;
+    OthelloNode* root;
 
 public:
     Player(Side side_in);
     ~Player();
 
-    int greedy_heuristic(Move *move, Side move_side);
+
+//    std::pair<double, Move*> minimax(Board* board, int depth, Side max_side, bool maximizing);
 
     Move *doMove(Move *opponentsMove, int msLeft);
 

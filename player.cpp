@@ -1,5 +1,7 @@
 #include "player.hpp"
 #include <map>
+#include <limits>
+#include <vector>
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -9,6 +11,7 @@
 Player::Player(Side side_in)
     : board(new Board()),
       side(side_in),
+      root(new OthelloNode(board, side_in)),
       testingMinimax(false)   // Will be set to true in test_minimax.cpp.
 {
     /*
@@ -16,6 +19,7 @@ Player::Player(Side side_in)
      * precalculating things, etc.) However, remember that you will only have
      * 30 seconds.
      */
+    root->populate_children(10, side, true);
 }
 
 /*
@@ -24,21 +28,6 @@ Player::Player(Side side_in)
 Player::~Player()
 {
     delete board;
-}
-
-// Returns greedy heuristic for this move
-// (n_{this} - n_{opponent})
-// Returns 0 if the move is invalid
-int Player::greedy_heuristic(Move *move, Side move_side)
-{
-    int ret = 0;
-    if(board->checkMove(move, move_side))
-    {
-        Board* copy = board->copy();
-        copy->doMove(move, move_side);
-        ret = copy->count(move_side) - copy->count(OTHER_SIDE(move_side));
-    }
-    return ret;
 }
 
 /*
@@ -58,7 +47,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
 {
     board->doMove(opponentsMove, OTHER_SIDE(side));
 
-    std::map<int, Move> possible_moves;
+    std::map<double, Move> possible_moves;
     Move move(0, 0);
     for(int i = 0; i < 8; i++)
     {
@@ -68,8 +57,10 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
             move.set_y(j);
             if(board->checkMove(&move, side))
             {
-                std::cerr << "Possible move: (" << move.x << ", " << move.y << std::endl;
-                possible_moves.insert(std::pair<int, Move>(greedy_heuristic(&move, side), move));
+                Board* copy = board->copy();
+                copy->doMove(&move, side);
+                double weighted_heuristic = heuristic(copy, side);
+                possible_moves.insert(std::pair<int, Move>(weighted_heuristic, move));
             }
         }
     }
@@ -78,7 +69,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
     if(!possible_moves.empty())
     {
         ret = new Move(possible_moves.rbegin()->second);
-        std::cerr << "Chosen move: (" << ret->x << ", " << ret->y << std::endl;
+        board->doMove(ret, side);
     }
 
     return ret;
