@@ -28,7 +28,7 @@ void Player::set_board(Board* board_in)
     board = board_in;
 }
 
-double Player::minimax(Board* board, int depth, bool maximizing)
+double Player::minimax(Board* board, int depth, bool maximizing, double& a, double& b)
 {
     double score = 0.0;
     if(depth == 0)  // Reached bottom
@@ -50,12 +50,22 @@ double Player::minimax(Board* board, int depth, bool maximizing)
                     // If there's an available move, min/max resulting state
                     Board* copy = board->copy();
                     copy->doMove(&move, moving_side);
-                    double this_score = minimax(copy, depth - 1, !maximizing);
-                    if(maximizing)
-                        score = std::max(score, this_score);
-                    else
-                        score = std::min(score, this_score);
+                    double this_score = minimax(copy, depth - 1, !maximizing, a, b);
                     delete copy;
+                    if(maximizing)
+                    {
+                        score = std::max(score, this_score);
+                        a = std::max(a, score);
+                        if(b <= a)  // Prune this subtree
+                            break;
+                    }
+                    else
+                    {
+                        score = std::min(score, this_score);
+                        b = std::min(b, score);
+                        if(b <= a)  // Prune this subtree
+                            break;
+                    }
                 }
             }
         }
@@ -189,7 +199,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
             move.set_y(j);
             if(board->checkMove(&move, side))
             {
-                double score = minimax(board, testingMinimax ? 1 : 3, true);
+                double a = -std::numeric_limits<double>::max();
+                double b = -a;
+                double score = minimax(board, testingMinimax ? 1 : 3, true, a, b);
                 if(!found_move || score > best_move.first)
                 {
                     found_move = true;

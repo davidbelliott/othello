@@ -33,7 +33,7 @@ public:
     double heuristic(Board* board, Side move_side);
 
     // Minimax
-    double minimax(Board* board, int depth, bool maximizing);
+    double minimax(Board* board, int depth, bool maximizing, double& a, double& b);
 
     // Game code
     Move *doMove(Move *opponentsMove, int msLeft);
