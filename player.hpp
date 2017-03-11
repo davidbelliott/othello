@@ -4,14 +4,18 @@
 #include "board.hpp"
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 class Player {
 private:
-    Board* board;
+    Board board;
     Side side;
     static const int weights[8][8];
+    milliseconds last_move_time;
+
 
 public:
     
@@ -19,21 +23,15 @@ public:
     Player(Side side_in);
     ~Player();
 
-    // Mutators
-    void set_board(Board* board_in);
-    void set_side(Side side_in);
-
-    // Accessors
-    Board* get_board();
-    Side get_side();
-
     // Heuristics
     int parity_heuristic(Board* board, Side move_side);
     int corner_heuristic(Board* board, Side move_side);
     int stability_heuristic(Board* board, Side move_side);
     int mobility_heuristic(Board* board, Side move_side);
+    
+    int get_weight(Board* board, Side move_side, int i, int j);
 
-    double heuristic(Board* board, Side move_side);
+    int heuristic(Board* board, Side move_side);
 
     // Minimax
     double minimax(Board* board, int depth, bool maximizing, double& a, double& b);

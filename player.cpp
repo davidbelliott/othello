@@ -4,24 +4,26 @@
 #include <vector>
 
 const int Player::weights[8][8] = 
-   {{  4, -3,  2,  2,  2,  2, -3,  4 },
-    { -3, -4, -1, -1, -1, -1, -4, -3 },
+   {{  5, -3,  2,  2,  2,  2, -3,  5 },
+    { -3, -5, -1, -1, -1, -1, -5, -3 },
     {  2, -1,  1,  0,  0,  1, -1,  2 },
     {  2, -1,  0,  1,  1,  0, -1,  2 },
     {  2, -1,  0,  1,  1,  0, -1,  2 },
     {  2, -1,  1,  0,  0,  1, -1,  2 },
-    { -3, -4, -1, -1, -1, -1, -4, -3 },
-    {  4, -3,  2,  2,  2,  2, -3,  4 }};
+    { -3, -5, -1, -1, -1, -1, -5, -3 },
+    {  5, -3,  2,  2,  2,  2, -3,  5 }};
 /*
  * Constructor for the player; initialize everything here. The side your AI is
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
  * within 30 seconds.
  */
 Player::Player(Side side_in)
-    : board(new Board()),
+    : board(),
       side(side_in),
+      last_move_time(),
       testingMinimax(false)   // Will be set to true in test_minimax.cpp.
 {
+    last_move_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 }
 
 /*
@@ -29,23 +31,21 @@ Player::Player(Side side_in)
  */
 Player::~Player()
 {
-    delete board;
-}
-
-void Player::set_board(Board* board_in)
-{
-    board = board_in;
 }
 
 double Player::minimax(Board* board, int depth, bool maximizing, double& a, double& b)
 {
-    double score = 0.0;
+    Side moving_side = maximizing ? side : OTHER_SIDE(side);
+    Side other_side = OTHER_SIDE(moving_side);
+    double score = 0;
+    bool this_can_move = false;
+    bool other_can_move = false;
     if(depth == 0)  // Reached bottom
-        score = heuristic(board, side);
+        score = heuristic(board, moving_side);
     else
     {
-        // Score starts out at -Inf for max, Inf for min
-        score = maximizing ? -std::numeric_limits<double>::max() : std::numeric_limits<double>::max();
+        // Score starts out at -Inf if max, Inf if min
+        score = -std::numeric_limits<double>::max();
         Move move(0, 0);
         bool prune = false;
         for(int i = 0; i < 8 && !prune; i++)
@@ -54,32 +54,38 @@ double Player::minimax(Board* board, int depth, bool maximizing, double& a, doub
             {
                 move.set_x(i);
                 move.set_y(j);
-                Side moving_side = maximizing ? side : OTHER_SIDE(side);
                 if(board->checkMove(&move, moving_side))
                 {
                     // If there's an available move, min/max resulting state
-                    Board* copy = board->copy();
-                    copy->doMove(&move, moving_side);
-                    double this_score = minimax(copy, depth - 1, !maximizing, a, b);
-                    delete copy;
-                    if(maximizing)
+                    this_can_move = true;
+                    Board copy = *board;
+                    copy.doMove(&move, moving_side);
+                    double this_score = 2 * heuristic(&copy, moving_side) - 0.8 * minimax(&copy, depth - 1, !maximizing, a, b);
+                    //if(maximizing)
                     {
                         score = std::max(score, this_score);
                         a = std::max(a, score);
-                        if(b <= a)  // Prune this subtree
-                            prune = true;
                     }
-                    else
+                    /*else
                     {
                         score = std::min(score, this_score);
                         b = std::min(b, score);
-                        if(b <= a)  // Prune this subtree
-                            prune = true;
                     }
+                    if(b <= a)  // Prune this subtree
+                    {
+                        std::cerr << "Pruning" << std::endl;
+                        prune = true;
+                    }*/
                 }
+                if(board->checkMove(&move, other_side))
+                    other_can_move = true;
             }
         }
     }
+
+    if(!this_can_move)
+        score = -50.0;
+
     return score;
 }
 
@@ -129,7 +135,7 @@ int Player::corner_heuristic(Board* board, Side move_side)
             }
         }
     }
-    return n_corners + n_potential;
+    return n_corners;
 }
 
 int Player::stability_heuristic(Board* board, Side move_side)
@@ -173,17 +179,18 @@ int Player::stability_heuristic(Board* board, Side move_side)
 /**
  * @brief Returns a weighted sum of all heuristics.
  */
-double Player::heuristic(Board* board, Side move_side)
+int Player::heuristic(Board* board, Side move_side)
 {
+    Side other_side = OTHER_SIDE(move_side);
     if(testingMinimax)
-        return parity_heuristic(board, move_side);
+        return parity_heuristic(board, move_side) - parity_heuristic(board, other_side);
     else
     {
         /*std::cerr << "Corner heuristic: " << corner_heuristic(board, move_side)
                   << "\nMobility heuristic: " << mobility_heuristic(board, move_side)
                   << "\nParity heuristic: " << parity_heuristic(board, move_side)
                   << std::endl;*/
-        Side min_side = OTHER_SIDE(move_side);
+        /*Side min_side = OTHER_SIDE(move_side);
         int max_corner_val = corner_heuristic(board, move_side);
         int min_corner_val = corner_heuristic(board, min_side);
         double corner_weight = 30.0;
@@ -211,9 +218,57 @@ double Player::heuristic(Board* board, Side move_side)
         double parity = (max_parity_val + min_parity_val == 0 ? 0.0 :
                 parity_weight * (max_parity_val - min_parity_val) /
                 (max_parity_val + min_parity_val));
-        
-        return corner + stability + parity + mobility;/*mobility + stability + parity*/;
+                */
+
+        int total = 0;
+        for(int i = 0; i <= 7; i++)
+        {
+            for(int j = 0; j <= 7; j++)
+            {
+                if(board->get(move_side, i, j))
+                    total += get_weight(board, move_side, i, j);
+                else if(board->get(other_side, i, j))
+                    total -= get_weight(board, other_side, i, j);
+            }
+        }
+        return total;
+
+        /*int total = 0;
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
+            {
+                total += (board->get(move_side, i, j) ? weights[i][j] : 0);
+                total -= (board->get(other_side, i, j) ? weights[i][j] : 0);
+            }
+        }*/
+
+        //return total;
     }
+}
+
+int Player::get_weight(Board* board, Side othelloside, int i, int j)
+{
+    //return weights[i][j];
+    int k = 1;
+    if((i == 0 || i == 7) && (j == 0 || j == 7))
+        k += 40;
+    if(i == 0 || i == 7 || j == 0 || j == 7)
+        k += 10;
+    if(i == 1 || i == 6 || j == 1 || j == 6)
+    {
+        k--;
+        if(i == 1 && j == 1 && !board->get(othelloside, 0, 0))
+            k -= 5;
+        if(i == 1 && j == 6 && !board->get(othelloside, 0, 7))
+            k -= 5;
+        if(i == 6 && j == 1 && !board->get(othelloside, 7, 0))
+            k -= 5;
+        if(i == 6 && j == 6 && !board->get(othelloside, 7, 7))
+            k -= 5;
+    }
+
+    return k;
 }
 
 /*
@@ -231,10 +286,11 @@ double Player::heuristic(Board* board, Side move_side)
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft)
 {
-    board->doMove(opponentsMove, OTHER_SIDE(side));
+    board.doMove(opponentsMove, OTHER_SIDE(side));
 
+    milliseconds elapsed = duration_cast<milliseconds>(system_clock::now().time_since_epoch()) - last_move_time;
     bool found_move = false;
-    std::pair<double, Move> best_move(0.0, Move(0, 0));
+    std::pair<int, Move> best_move(0.0, Move(0, 0));
     Move move(0, 0);
     for(int i = 0; i < 8; i++)
     {
@@ -242,15 +298,13 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
         {
             move.set_x(i);
             move.set_y(j);
-            if(board->checkMove(&move, side))
+            if(board.checkMove(&move, side))
             {
                 double a = -std::numeric_limits<double>::max();
                 double b = -a;
-                Board* copy = board->copy();
-                copy->doMove(&move, side);
-                //double score = minimax(copy, testingMinimax ? 1 : 4, true, a, b);
-                double score = heuristic(copy, side);
-                delete copy;
+                Board copy = board;
+                copy.doMove(&move, side);
+                double score = heuristic(&copy, side) - 0.8 * minimax(&copy, testingMinimax ? 1 : 3, false, a, b);
                 if(!found_move || score > best_move.first)
                 {
                     found_move = true;
@@ -264,9 +318,10 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
     Move* ret = nullptr;
     if(found_move)
     {
-        board->doMove(&best_move.second, side);
+        board.doMove(&best_move.second, side);
         ret = new Move(best_move.second);
     }
 
+    last_move_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     return ret;
 }
