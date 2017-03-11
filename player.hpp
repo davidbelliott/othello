@@ -11,6 +11,7 @@ class Player {
 private:
     Board* board;
     Side side;
+    static const int weights[8][8];
 
 public:
     
@@ -28,8 +29,10 @@ public:
 
     // Heuristics
     int parity_heuristic(Board* board, Side move_side);
-    int edge_heuristic(Board* board, Side move_side);
+    int corner_heuristic(Board* board, Side move_side);
+    int stability_heuristic(Board* board, Side move_side);
     int mobility_heuristic(Board* board, Side move_side);
+
     double heuristic(Board* board, Side move_side);
 
     // Minimax
