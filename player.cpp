@@ -2,6 +2,8 @@
 #include <map>
 #include <limits>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 const int Player::weights[8][8] = 
    {{  5, -3,  2,  2,  2,  2, -3,  5 },
@@ -24,6 +26,7 @@ Player::Player(Side side_in)
       testingMinimax(false)   // Will be set to true in test_minimax.cpp.
 {
     last_move_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    std::this_thread::sleep_for(std::chrono::seconds(6));
 }
 
 /*
