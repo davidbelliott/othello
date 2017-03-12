@@ -7,6 +7,8 @@ enum Side {
 #define OTHER_SIDE(side)    \
     (side == WHITE ? BLACK : WHITE)
 
+#define INFINITY std::numeric_limits<int>::max()
+
 class Move {
    
 public:

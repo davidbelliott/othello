@@ -57,7 +57,7 @@ void Player::get_possible_moves(Board* board, Side side, std::vector<Move>* move
     }
 }
 
-int Player::negamax(Board* board, int depth, Side move_side, Move** m)
+int Player::negamax(Board* board, int depth, Side move_side, int a, int b, Move** m)
 {
     if(m)
         *m = nullptr;
@@ -78,11 +78,14 @@ int Player::negamax(Board* board, int depth, Side move_side, Move** m)
     {
         Board copy = *board;
         copy.doMove(&*it, move_side);
-        int this_score = (int)((float)heuristic(board, move_side) - 0.85 * (double)negamax(&copy, depth - 1, OTHER_SIDE(move_side)));
+        int this_score = (int)((float)heuristic(board, move_side) - 0.85 * (double)negamax(&copy, depth - 1, OTHER_SIDE(move_side), -b, -a));
         if(this_score > best_score)
         {
             best_score = this_score;
             best_move = *it;
+            a = this_score;
+            if(a >= b)  // Prune branch
+                break;
         }
         /*else if(!maximizing && this_score < best_score)
         {
@@ -299,7 +302,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
 {
     board->doMove(opponentsMove, OTHER_SIDE(player_side));
     Move* best_move = nullptr;
-    negamax(board, testingMinimax ? 2 : 5, player_side, &best_move);
+    negamax(board, testingMinimax ? 2 : 5, player_side, -INFINITY, INFINITY, &best_move);
     if(best_move)
     {
         board->doMove(best_move, player_side);

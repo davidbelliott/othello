@@ -38,7 +38,7 @@ public:
     void get_possible_moves(Board* board, Side side, std::vector<Move>* moves);
 
     // Negamax
-    int negamax(Board* board, int depth, Side move_side, Move** m=nullptr);
+    int negamax(Board* board, int depth, Side move_side, int a, int b, Move** m=nullptr);
 
     // Game code
     Move *doMove(Move *opponentsMove, int msLeft);
