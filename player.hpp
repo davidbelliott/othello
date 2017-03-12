@@ -11,8 +11,8 @@ using namespace std::chrono;
 
 class Player {
 private:
-    Board board;
-    Side side;
+    Board* board;
+    Side player_side;
     static const int weights[8][8];
     milliseconds last_move_time;
 
@@ -24,17 +24,21 @@ public:
     ~Player();
 
     // Heuristics
-    int parity_heuristic(Board* board, Side move_side);
+    /*int parity_heuristic(Board* board, Side move_side);
     int corner_heuristic(Board* board, Side move_side);
     int stability_heuristic(Board* board, Side move_side);
-    int mobility_heuristic(Board* board, Side move_side);
+    int mobility_heuristic(Board* board, Side move_side);*/
+
+    void set_board(Board* board);
     
     int get_weight(Board* board, Side move_side, int i, int j);
 
     int heuristic(Board* board, Side move_side);
 
-    // Minimax
-    double minimax(Board* board, int depth, bool maximizing, double& a, double& b);
+    void get_possible_moves(Board* board, Side side, std::vector<Move>* moves);
+
+    // Negamax
+    int negamax(Board* board, int depth, Side move_side, Move** m=nullptr);
 
     // Game code
     Move *doMove(Move *opponentsMove, int msLeft);

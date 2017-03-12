@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
         cmd += " ";
         cmd += *(argv++);
     }
-    cmd += "& sleep 5 && sudo gdb presbyterian_ghostbusters `pidof presbyterian_ghostbusters`";
+    //cmd += "& sleep 4 && sudo gdb presbyterian_ghostbusters `pidof presbyterian_ghostbusters`";
     system(cmd.c_str());
     return 0;
 }

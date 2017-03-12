@@ -19,14 +19,14 @@ const int Player::weights[8][8] =
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
  * within 30 seconds.
  */
-Player::Player(Side side_in)
-    : board(),
-      side(side_in),
+Player::Player(Side player_side_in)
+    : board(new Board()),
+      player_side(player_side_in),
       last_move_time(),
       testingMinimax(false)   // Will be set to true in test_minimax.cpp.
 {
     last_move_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-    std::this_thread::sleep_for(std::chrono::seconds(6));
+    //std::this_thread::sleep_for(std::chrono::seconds(5));
 }
 
 /*
@@ -34,75 +34,77 @@ Player::Player(Side side_in)
  */
 Player::~Player()
 {
+    delete board;
 }
 
-double Player::minimax(Board* board, int depth, bool maximizing, double& a, double& b)
+void Player::set_board(Board* board_in)
 {
-    Side moving_side = maximizing ? side : OTHER_SIDE(side);
-    Side other_side = OTHER_SIDE(moving_side);
-    double score = 0;
-    bool this_can_move = false;
-    bool other_can_move = false;
-    if(depth == 0)  // Reached bottom
-        score = heuristic(board, moving_side);
-    else
+    delete board;
+    board = board_in;
+}
+
+void Player::get_possible_moves(Board* board, Side side, std::vector<Move>* moves)
+{
+    *moves = { };
+    for(int i = 0; i < 8; i++)
     {
-        // Score starts out at -Inf if max, Inf if min
-        score = -std::numeric_limits<double>::max();
-        Move move(0, 0);
-        bool prune = false;
-        for(int i = 0; i < 8 && !prune; i++)
+        for(int j = 0; j < 8; j++)
         {
-            for(int j = 0; j < 8 && !prune; j++)
-            {
-                move.set_x(i);
-                move.set_y(j);
-                if(board->checkMove(&move, moving_side))
-                {
-                    // If there's an available move, min/max resulting state
-                    this_can_move = true;
-                    Board copy = *board;
-                    copy.doMove(&move, moving_side);
-                    double this_score = 2 * heuristic(&copy, moving_side) - 0.85 * minimax(&copy, depth - 1, !maximizing, a, b);
-                    if(maximizing)
-                    {
-                        score = std::max(score, this_score);
-                        a = std::max(a, score);
-                    }
-                    else
-                    {
-                        score = std::max(score, this_score);
-                        b = std::max(b, score);
-                    }
-                    if(b <= a)  // Prune this subtree
-                    {
-                        std::cerr << "Pruning" << std::endl;
-                        prune = true;
-                    }
-                }
-                if(board->checkMove(&move, other_side))
-                    other_can_move = true;
-            }
+            Move move(i, j);
+            if(board->checkMove(&move, side))
+                moves->push_back(move);
         }
     }
+}
 
-    if(!this_can_move)
+int Player::negamax(Board* board, int depth, Side move_side, Move** m)
+{
+    if(m)
+        *m = nullptr;
+
+    if(depth == 0)
+        return heuristic(board, move_side);
+
+    std::vector<Move> moves;
+    get_possible_moves(board, move_side, &moves);
+
+    if(moves.empty())
+        return -35;
+
+    Move best_move(0, 0);
+    int best_score = -std::numeric_limits<int>::max();
+
+    for(auto it = moves.begin(); it != moves.end(); ++it)
     {
-        //if(other_can_move)
-            score = -25.0;
-        /*else if(board->count(moving_side) - board->count(other_side) > 0)
-            score = 100.0;
-        else
-            score = -100.0;*/
+        Board copy = *board;
+        copy.doMove(&*it, move_side);
+        int this_score = (int)((float)heuristic(board, move_side) - 0.85 * (double)negamax(&copy, depth - 1, OTHER_SIDE(move_side)));
+        if(this_score > best_score)
+        {
+            best_score = this_score;
+            best_move = *it;
+        }
+        /*else if(!maximizing && this_score < best_score)
+        {
+            best_score = this_score;
+            best_move = *it;
+        }*/
     }
-    return score;
+
+    if(m)
+        *m = new Move(best_move);
+
+    if(depth == 4)
+        int x = 0;
+
+    return best_score;
 }
 
 /**
  * @brief Returns the difference between move_side's pieces and the other
  * side's pieces.
  */
-int Player::parity_heuristic(Board* board, Side move_side)
+/*int Player::parity_heuristic(Board* board, Side move_side)
 {
     return board->count(move_side);
 }
@@ -183,7 +185,7 @@ int Player::stability_heuristic(Board* board, Side move_side)
     }
                     
     return stability;
-}
+}*/
 
 /**
  * @brief Returns a weighted sum of all heuristics.
@@ -191,10 +193,10 @@ int Player::stability_heuristic(Board* board, Side move_side)
 int Player::heuristic(Board* board, Side move_side)
 {
     Side other_side = OTHER_SIDE(move_side);
-    if(testingMinimax)
-        return parity_heuristic(board, move_side) - parity_heuristic(board, other_side);
+    /*if(testingMinimax)
+        return board->count(move_side) - board->count(other_side);
     else
-    {
+    {*/
         /*std::cerr << "Corner heuristic: " << corner_heuristic(board, move_side)
                   << "\nMobility heuristic: " << mobility_heuristic(board, move_side)
                   << "\nParity heuristic: " << parity_heuristic(board, move_side)
@@ -253,12 +255,12 @@ int Player::heuristic(Board* board, Side move_side)
         }*/
 
         //return total;
-    }
+    //}
 }
 
 int Player::get_weight(Board* board, Side othelloside, int i, int j)
 {
-    return weights[i][j];
+    //return weights[i][j];
     int k = 1;
     if((i == 0 || i == 7) && (j == 0 || j == 7))
         k += 40;
@@ -295,41 +297,13 @@ int Player::get_weight(Board* board, Side othelloside, int i, int j)
  */
 Move *Player::doMove(Move *opponentsMove, int msLeft)
 {
-    board.doMove(opponentsMove, OTHER_SIDE(side));
-
-    milliseconds elapsed = duration_cast<milliseconds>(system_clock::now().time_since_epoch()) - last_move_time;
-    std::cerr << "Elapsed:" << elapsed.count() << std::endl;
-    bool found_move = false;
-    std::pair<int, Move> best_move(0.0, Move(0, 0));
-    for(int i = 0; i < 8; i++)
+    board->doMove(opponentsMove, OTHER_SIDE(player_side));
+    Move* best_move = nullptr;
+    negamax(board, testingMinimax ? 2 : 5, player_side, &best_move);
+    if(best_move)
     {
-        for(int j = 0; j < 8; j++)
-        {
-            Move move(i, j);
-            if(board.checkMove(&move, side))
-            {
-                double a = -std::numeric_limits<double>::max();
-                double b = -a;
-                Board copy = board;
-                copy.doMove(&move, side);
-                double score = heuristic(&copy, side) - 0.85 * minimax(&copy, testingMinimax ? 1 : 4, false, a, b);
-                if(!found_move || score > best_move.first)
-                {
-                    found_move = true;
-                    best_move.first = score;
-                    best_move.second = move;
-                }
-            }
-        }
+        board->doMove(best_move, player_side);
+        std::cerr << "Did (" << best_move->x << ", " << best_move->y << ")\n";
     }
-
-    Move* ret = nullptr;
-    if(found_move)
-    {
-        board.doMove(&best_move.second, side);
-        ret = new Move(best_move.second);
-    }
-
-    last_move_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-    return ret;
+    return best_move;
 }
