@@ -3,13 +3,22 @@
 /*
  * Make a standard 8x8 othello board and initialize it to the standard setup.
  */
-Board::Board() {
-    taken.set(3 + 8 * 3);
-    taken.set(3 + 8 * 4);
-    taken.set(4 + 8 * 3);
-    taken.set(4 + 8 * 4);
-    black.set(4 + 8 * 3);
-    black.set(3 + 8 * 4);
+Board::Board()
+    : data()
+{
+    for(int i = 0; i < 64; i++)
+        data[i] = ' ';
+    set(WHITE, 3, 3);
+    set(WHITE, 4, 4);
+    set(BLACK, 3, 4);
+    set(BLACK, 4, 3);
+}
+
+Board::Board(char data_in[])
+    : Board()
+{
+    for(int i = 0; i < 64; i++)
+        data[i] = data_in[i];
 }
 
 /*
@@ -18,33 +27,25 @@ Board::Board() {
 Board::~Board() {
 }
 
-/*
- * Returns a copy of this board.
- */
-Board *Board::copy() {
-    Board *newBoard = new Board();
-    newBoard->black = black;
-    newBoard->taken = taken;
-    return newBoard;
+bool Board::onBoard(int x, int y)
+{
+    return 0 <= x && x <= 7 && 0 <= y && y <= 7;
 }
 
-bool Board::occupied(int x, int y) {
-    return taken[x + 8*y];
+bool Board::get(char side, int x, int y)
+{
+    return data[x+8*y] == side;
 }
 
-bool Board::get(Side side, int x, int y) {
-    return occupied(x, y) && (black[x + 8*y] == (side == BLACK));
+void Board::set(char side, int x, int y)
+{
+    data[x+8*y] = side;
 }
 
-void Board::set(Side side, int x, int y) {
-    taken.set(x + 8*y);
-    black.set(x + 8*y, side == BLACK);
+bool Board::occupied(int x, int y)
+{
+    return data[x+8*y] != ' ';
 }
-
-bool Board::onBoard(int x, int y) {
-    return(0 <= x && x < 8 && 0 <= y && y < 8);
-}
-
 
 /*
  * Returns true if the game is finished; false otherwise. The game is finished
@@ -57,7 +58,8 @@ bool Board::isDone() {
 /*
  * Returns true if there are legal moves for the given side.
  */
-bool Board::hasMoves(Side side) {
+bool Board::hasMoves(char side)
+{
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             Move move(i, j);
@@ -70,7 +72,8 @@ bool Board::hasMoves(Side side) {
 /*
  * Returns true if a move is legal for the given side; false otherwise.
  */
-bool Board::checkMove(Move *m, Side side) {
+bool Board::checkMove(Move *m, char side)
+{
     // Passing is only legal if you have no moves.
     if (m == nullptr) return !hasMoves(side);
 
@@ -80,7 +83,7 @@ bool Board::checkMove(Move *m, Side side) {
     // Make sure the square hasn't already been taken.
     if (occupied(X, Y)) return false;
 
-    Side other = (side == BLACK) ? WHITE : BLACK;
+    char other = OTHER_SIDE(side);
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
             if (dy == 0 && dx == 0) continue;
@@ -88,13 +91,13 @@ bool Board::checkMove(Move *m, Side side) {
             // Is there a capture in that direction?
             int x = X + dx;
             int y = Y + dy;
-            if (onBoard(x, y) && get(other, x, y)) {
+            if (0 <= x && x <= 7 && 0 <= y && y <= 7 && get(other, x, y)) {
                 do {
                     x += dx;
                     y += dy;
-                } while (onBoard(x, y) && get(other, x, y));
+                } while (0 <= x && x <= 7 && 0 <= y && y <= 7 && get(other, x, y));
 
-                if (onBoard(x, y) && get(side, x, y)) return true;
+                if (0 <= x && x <= 7 && 0 <= y && y <= 7 && get(side, x, y)) return true;
             }
         }
     }
@@ -104,7 +107,7 @@ bool Board::checkMove(Move *m, Side side) {
 /*
  * Modifies the board to reflect the specified move.
  */
-void Board::doMove(Move *m, Side side) {
+void Board::doMove(Move *m, char side) {
     // A nullptr move means pass.
     if (m == nullptr) return;
 
@@ -113,7 +116,8 @@ void Board::doMove(Move *m, Side side) {
 
     int X = m->get_x();
     int Y = m->get_y();
-    Side other = (side == BLACK) ? WHITE : BLACK;
+    char other = OTHER_SIDE(side);
+
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
             if (dy == 0 && dx == 0) continue;
@@ -123,7 +127,7 @@ void Board::doMove(Move *m, Side side) {
             do {
                 x += dx;
                 y += dy;
-            } while (onBoard(x, y) && get(other, x, y));
+            } while (0 <= x && x <= 7 && 0 <= y && y <= 7 && get(other, x, y));
 
             if (onBoard(x, y) && get(side, x, y)) {
                 x = X;
@@ -144,37 +148,21 @@ void Board::doMove(Move *m, Side side) {
 /*
  * Current count of given side's stones.
  */
-int Board::count(Side side) {
-    return (side == BLACK) ? countBlack() : countWhite();
+int Board::count(char side)
+{
+    int total = 0;
+    for(int i = 0; i < 64; i++)
+        total += data[i] == side;
+    return total;
 }
 
-/*
- * Current count of black stones.
- */
-int Board::countBlack() {
-    return black.count();
+void Board::setBoard(char data[])
+{
+    for(int i = 0; i < 64; i++)
+        this->data[i] = data[i];
 }
 
-/*
- * Current count of white stones.
- */
-int Board::countWhite() {
-    return taken.count() - black.count();
-}
-
-/*
- * Sets the board state given an 8x8 char array where 'w' indicates a white
- * piece and 'b' indicates a black piece. Mainly for testing purposes.
- */
-void Board::setBoard(char data[]) {
-    taken.reset();
-    black.reset();
-    for (int i = 0; i < 64; i++) {
-        if (data[i] == 'b') {
-            taken.set(i);
-            black.set(i);
-        } if (data[i] == 'w') {
-            taken.set(i);
-        }
-    }
+bool Board::operator<(Board& other)
+{
+    return this->data < other.data;
 }

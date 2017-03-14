@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
         cerr << "usage: " << argv[0] << " side" << endl;
         exit(-1);
     }
-    Side side = (!strcmp(argv[1], "Black")) ? BLACK : WHITE;
+    char side = (!strcmp(argv[1], "Black")) ? BLACK : WHITE;
 
     // Initialize player.
     Player *player = new Player(side);
