@@ -161,8 +161,3 @@ void Board::setBoard(char data[])
     for(int i = 0; i < 64; i++)
         this->data[i] = data[i];
 }
-
-bool Board::operator<(Board& other)
-{
-    return this->data < other.data;
-}

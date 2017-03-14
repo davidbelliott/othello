@@ -5,13 +5,8 @@
 
 struct OthelloNode
 {
-    Board* board;
-    Side move_side;
-    double weight;
-
+    char move_side;
+    bool best_move_exists;
     Move best_move;
-    std::map<Move, OthelloNode*> children;
-
-    OthelloNode(Board* board_in, Side move_side_in);
-    ~OthelloNode();
+    int depth_checked;
 };

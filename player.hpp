@@ -1,7 +1,8 @@
 #pragma once
 
-#include "opening_book.hpp"
+//#include "opening_book.hpp"
 #include "board.hpp"
+#include "othello_node.hpp"
 #include "common.hpp"
 #include <iostream>
 #include <vector>
@@ -9,6 +10,7 @@
 class Player {
 private:
     Board* board;
+    //std::map<Board, OthelloNode, BoardCmp> transpositions;
     int erm;            // Estimated remaining moves (for use in timing)
     char player_side;
     static const int weights[8][8];

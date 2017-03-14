@@ -1,7 +1,7 @@
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
-#include <bitset>
+#include <string.h>
 #include "common.hpp"
 using namespace std;
 
@@ -25,7 +25,14 @@ public:
     void doMove(Move *m, char side);
     int count(char side);
     void setBoard(char data[]);
-    bool operator<(Board& other);
+};
+
+struct BoardCmp
+{
+    bool operator()(const Board& a, const Board& b)
+    {
+        return memcmp(a.data, b.data, 64) < 0;
+    }
 };
 
 #endif

@@ -29,17 +29,6 @@ std::map<const char*, Move, CstrCmp> opening_book = {
     {
         "        "
         "        "
-        "  w     "
-        "  bwb   "
-        "   bw   "
-        "        "
-        "        "
-        "        ",
-        {3, 2}
-    },
-    {
-        "        "
-        "        "
         "  wb    "
         "  bbb   "
         "   bw   "
@@ -50,60 +39,69 @@ std::map<const char*, Move, CstrCmp> opening_book = {
     },
     {
         "        "
-        "        "
-        "  wb    "
+        " b      "
+        "  bb    "
         "  wbb   "
         "  www   "
         "        "
         "        "
         "        ",
-        {1, 1}
+        {0, 0}
     },
 
+    // Snake/Peasant
     {
         "        "
         "        "
-        "        "
-        "        "
-        "        "
+        " bbb    "
+        "  wbb   "
+        "  www   "
         "        "
         "        "
         "        ",
-        {0, 0}
+        {5, 3}
     },
+
+    // Lysons
     {
         "        "
         "        "
-        "        "
-        "        "
-        "        "
+        " bbb w  "
+        "  wbw   "
+        "  www   "
         "        "
         "        "
         "        ",
-        {0, 0}
+        {2, 5}
     },
+
+    // Pyramid/Checkerboarding Peasant
     {
         "        "
         "        "
-        "        "
-        "        "
-        "        "
-        "        "
+        " bbb    "
+        " wbwbw  "
+        " bbbbb  "
+        "  bw    "
         "        "
         "        ",
-        {0, 0}
+        {1, 5}
     },
+
+    // Heath/Tobidashi "Jumping Out"
     {
         "        "
         "        "
-        "        "
-        "        "
-        "        "
+        "  wb    "
+        " bbbb   "
+        "  www   "
         "        "
         "        "
         "        ",
-        {0, 0}
+        {3, 1}
     },
+
+    // Classic Heath
     {
         "        "
         "        "

@@ -64,6 +64,9 @@ void Player::get_possible_moves(Board* board, char side, std::vector<Move>* move
 
 int Player::negamax(Board* board, int depth, char move_side, int a, int b, Move** m)
 {
+    int best_score = -INFINITY;
+    // Check if exists in transposition table
+
     // If passing move, start out with nullptr
     if(m)
         *m = nullptr;
@@ -85,21 +88,20 @@ int Player::negamax(Board* board, int depth, char move_side, int a, int b, Move*
         {
             int diff = board->count(move_side) - board->count(other_side);
             if(diff > 0)
-                return INFINITY / 2;    // Win is infinitely valuable, but
+                best_score = INFINITY / 2;    // Win is infinitely valuable, but
                                         // must divide by 2 for maximizing
             else if(diff < 0)
-                return -INFINITY / 2;   // Loss is infinitely bad, but
+                best_score = -INFINITY / 2;   // Loss is infinitely bad, but
                                         // must divide by 2 for maximizing
             else
-                return 0;           // Draw is neutral
+                best_score = 0;           // Draw is neutral
         }
         else
-            return -20;             // We don't want to pass a move
+            best_score = -20;             // We don't want to pass a move
     }
     else
     {
         Move best_move(0, 0);
-        int best_score = -INFINITY;
         for(auto it = moves.begin(); it != moves.end(); ++it)
         {
             Board copy = *board;
@@ -117,12 +119,8 @@ int Player::negamax(Board* board, int depth, char move_side, int a, int b, Move*
 
         if(m)
             *m = new Move(best_move);
-
-        if(depth == 4 && moves.size() == 1 && best_move.x == 0 && best_move.y == 0)
-            int x = 0;
-
-        return best_score;
     }
+    return best_score;
 }
 
 /**
