@@ -23,18 +23,18 @@ std::map<std::string, Move> opening_book = {
         "        "
         "        "
         "        ",
-        {2, 3}
+        {4, 5}
     },
     {
         "        "
         "        "
-        "        "
-        "  bbb   "
+        "  w     "
+        "  bwb   "
         "   bw   "
         "        "
         "        "
         "        ",
-        {2, 2}
+        {3, 2}
     },
 
     // X-square opening
@@ -163,9 +163,124 @@ std::map<std::string, Move> opening_book = {
         "        "
         "        ",
         {1, 2}
-    }
+    },
 
     // Heath-Chimney 'Mass-Turning'
+    {
+        "        "
+        "        "
+        "  www   "
+        " bbww   "
+        "  www   "
+        "        "
+        "        "
+        "        ",
+        {4, 2}
+    },
+
+    // Raccoon Dog
+    {
+        "        "
+        "        "
+        "  wb    "
+        "  bbb   "
+        " bwww   "
+        "        "
+        "        "
+        "        ",
+        {3, 1}
+    },
+
+    // Rocket
+    {
+        "        "
+        "        "
+        "  wb    "
+        "  wbb   "
+        "  bww   "
+        " b      "
+        "        "
+        "        ",
+        {4, 2}
+    },
+
+    // Hamilton
+    {
+        "        "
+        "        "
+        "  wb    "
+        "  bbb   "
+        " bwww   "
+        " bw     "
+        "        "
+        "        ",
+        {0, 5}
+    },
+
+    // Lollipop
+    {
+        "        "
+        "        "
+        "  www   "
+        "  wbw   "
+        "  bww   "
+        " b      "
+        "        "
+        "        ",
+        {3, 5}
+    },
+
+    // Cow
+    {
+        "        "
+        "        "
+        "  wb    "
+        "  wbb   "
+        "  wbw   "
+        "   b    "
+        "        "
+        "        ",
+        {4, 2}
+    },
+
+    // Chimney
+    {
+        "        "
+        "        "
+        "  www   "
+        "  www   "
+        "  wbw   "
+        "   b    "
+        "        "
+        "        ",
+        {1, 4}
+    },
+
+    // Cow Bat
+    {
+        "        "
+        "        "
+        "  wb    "
+        " bwwww  "
+        "  bbw   "
+        "   b    "
+        "        "
+        "        ",
+        {1, 5}
+    },
+
+    // Perpendicular Opening
+    {
+        "        "
+        "        "
+        "    w   "
+        "  bbw   "
+        "   bw   "
+        "        "
+        "        "
+        "        ",
+        {5, 5}
+    },
 };
 
 void load_book(const char* filename)

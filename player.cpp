@@ -257,10 +257,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
                 {
                     clock_t iter_start_time = clock();
                     negamax(board, depth, player_side, -INFINITY, INFINITY, &best_move);
-                    next_expected_ms = (clock() - iter_start_time) * 4;
+                    clock_t last_ms = clock() - iter_start_time;
+                    next_expected_ms = 4 * last_ms;
                 }
             }
-            std::cerr << "Ran to depth " << depth << " in " << (((clock() - begin_time) * 1000) / CLOCKS_PER_SEC) << " ms\n";
+            std::cerr << "Ran to depth " << (depth - 1) << " in " << (((clock() - begin_time) * 1000) / CLOCKS_PER_SEC) << " ms\n";
         }
     }
 
