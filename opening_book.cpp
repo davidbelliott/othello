@@ -1,6 +1,18 @@
 #include "opening_book.hpp"
+#include <fstream>
+#include <iostream>
 
-std::map<const char*, Move, CstrCmp> opening_book = {
+void print_board(const char board[64], std::ostream& out)
+{
+    for(int j = 0; j < 64; j++)
+    {
+        out << board[j];
+        if(j % 8 == 7)
+            out << "\n";
+    }
+}
+
+std::map<std::string, Move> opening_book = {
     // Diagonal opening
     {
         "        "
@@ -104,46 +116,96 @@ std::map<const char*, Move, CstrCmp> opening_book = {
     // Classic Heath
     {
         "        "
-        "        "
-        "        "
-        "        "
-        "        "
+        "  bw    "
+        "  bb    "
+        " bbwb   "
+        "  www   "
         "        "
         "        "
         "        ",
-        {0, 0}
+        {0, 3}
     },
+
+    // Mimura Variation II
     {
         "        "
-        "        "
-        "        "
-        "        "
-        "        "
-        "        "
-        "        "
+        "  bw    "
+        "  bb    "
+        " bbbbw  "
+        "  bbbb  "
+        "  wwb   "
+        "     b  "
         "        ",
-        {0, 0}
+        {5, 5}
     },
+
+    // Heath-Bat
     {
         "        "
-        "        "
-        "        "
-        "        "
-        "        "
-        "        "
+        "   w    "
+        "  ww    "
+        " bbwb   "
+        "  bww   "
+        "   b    "
         "        "
         "        ",
-        {0, 0}
+        {1, 2}
     },
+
+    // Iwasaki Varation
     {
         "        "
-        "        "
-        "        "
-        "        "
-        "        "
+        "   wb   "
+        "  wb    "
+        " bbwb   "
+        "  www   "
         "        "
         "        "
         "        ",
-        {0, 0}
+        {1, 2}
     }
+
+    // Heath-Chimney 'Mass-Turning'
 };
+
+void load_book(const char* filename)
+{
+    std::ifstream input_file(filename);
+    while(input_file.good() && !input_file.eof())
+    {
+        char board[65];
+        board[64] = '\0';
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
+                board[8*i + j] = input_file.get();
+            input_file.get();
+        }
+        if(input_file.good() && !input_file.eof())
+        {
+            int x, y;
+            input_file >> x;
+            input_file.get();
+            input_file >> y;
+            input_file.get();
+            Move move(x, y);
+            std::cerr << "Assigning move (" << x << ", " << y <<") to board:\n";
+            print_board(board, std::cerr);
+            std::cerr << std::endl;
+            opening_book[board] = move;
+        }
+    }
+    input_file.close();
+}
+
+void write_book(const char* filename)
+{
+    std::ofstream output_file(filename);
+    for(auto it = opening_book.begin(); it != opening_book.end(); ++it)
+    {
+        print_board(it->first.c_str(), output_file);
+        output_file << it->second.x << "," << it->second.y << "\n";
+    }
+    output_file.close();
+}
+

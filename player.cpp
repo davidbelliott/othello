@@ -29,7 +29,7 @@ Player::Player(char player_side_in)
       player_side(player_side_in),
       testingMinimax(false)   // Will be set to true in test_minimax.cpp.
 {
-    char test[] = "abcdefgh"
+    /*char test[] = "abcdefgh"
                   "ijklmnop"
                   "qrstuvwx"
                   "yz012345"
@@ -60,8 +60,10 @@ Player::Player(char player_side_in)
             std::cerr << test[j];
         }
         std::cerr << "\tMove:" << move.x << ", " << move.y << std::endl;
-    }
+    }*/
     //std::this_thread::sleep_for(std::chrono::seconds(10));
+
+    //load_book("presbyterian_ghostbusters_moves");
 }
 
 /*
@@ -204,32 +206,38 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
     clock_t begin_time = clock();
     board->doMove(opponentsMove, OTHER_SIDE(player_side));
     Move* best_move = nullptr;
+    bool found_opening_book_move = false;
+
+    //print_board(board->data, std::cerr);
 
     if(testingMinimax)
         negamax(board, 2, player_side, -INFINITY, INFINITY, &best_move);
-    else if(msLeft == -1)
-        negamax(board, default_depth, player_side, -INFINITY, INFINITY, &best_move);
     else 
     {
-        bool found_opening_book_move = false;
-        char rotated[64];
-        char temp[64];
+        char rotated[65];
+        char temp[65];
 
+        rotated[64] = '\0';
+        temp[64] = '\0';
         memcpy(rotated, board->data, 64);
         for(int i = 0; i < 4; i++)
         {
+            //std::cerr << "Lookup str: " << rotated << std::endl;
+            /*for(auto it = opening_book.begin(); it != opening_book.end(); ++it)
+                std::cerr << "Comparison str: " << it->first << std::endl;*/
             if(opening_book.count(rotated))
             {
+                //std::cerr << "Located opening book move" << std::endl;
                 Move rotated_move = rotate_move(opening_book[rotated], i);
                 if(board->checkMove(&rotated_move, player_side))
                 {
-                    best_move = new Move(rotate_move(opening_book[board->data], i));
+                    best_move = new Move(rotated_move);
                     found_opening_book_move = true;
                     break;
                 }
             }
             rotate_data(rotated, temp);
-            memcpy(rotated, temp, 64);
+            strcpy(rotated, temp);
         }
 
         if(found_opening_book_move)
@@ -238,11 +246,19 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
         {
             clock_t next_expected_ms = 0;
             int depth = 1;
-            for(; depth <= max_depth && ((clock() - begin_time + next_expected_ms) * 1000) / CLOCKS_PER_SEC < msLeft / erm; depth++)
+            if(msLeft == -1)
             {
-                clock_t iter_start_time = clock();
+                depth = default_depth;
                 negamax(board, depth, player_side, -INFINITY, INFINITY, &best_move);
-                next_expected_ms = (clock() - iter_start_time) * 4;
+            }
+            else
+            {
+                for(depth = 1; depth <= max_depth && ((clock() - begin_time + next_expected_ms) * 1000) / CLOCKS_PER_SEC < msLeft / erm; depth++)
+                {
+                    clock_t iter_start_time = clock();
+                    negamax(board, depth, player_side, -INFINITY, INFINITY, &best_move);
+                    next_expected_ms = (clock() - iter_start_time) * 4;
+                }
             }
             std::cerr << "Ran to depth " << depth << " in " << (((clock() - begin_time) * 1000) / CLOCKS_PER_SEC) << " ms\n";
         }
@@ -253,5 +269,15 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
         board->doMove(best_move, player_side);
     if(erm > 1)
         erm--;
+
+    /*if(best_move && !found_opening_book_move)
+    {
+        std::cerr << "Adding move:\n";
+        print_board(board->data, std::cerr);
+        std::cerr << "\nMove:" << best_move->x << ", " << best_move->y << std::endl;
+        opening_book[board->data] = *best_move;
+    }*/
+    /*if(board->isDone())
+        write_book("presbyterian_ghostbusters_moves");*/
     return best_move;
 }
