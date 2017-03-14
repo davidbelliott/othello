@@ -178,8 +178,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
         negamax(board, 2, player_side, -INFINITY, INFINITY, &best_move);
     else if(msLeft == -1)
         negamax(board, default_depth, player_side, -INFINITY, INFINITY, &best_move);
-    else if(opening_book.count(board->data))
+    /*else if(opening_book.count(board->data))
+    {
         best_move = new Move(opening_book[board->data]);
+        std::cerr << "Used opening book to get move: " << best_move->x << ", " << best_move->y << std::endl;
+    }*/
     else
     {
         clock_t next_expected_ms = 0;
