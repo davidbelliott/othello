@@ -8,29 +8,23 @@ using namespace std;
 class Board {
 
 public:
-    bitset<64> black;
-    bitset<64> taken;
+    char data[64];
 
     bool occupied(int x, int y);
-    bool get(Side side, int x, int y);
-    void set(Side side, int x, int y);
-    bool onBoard(int x, int y);
+    bool get(char side, int x, int y);
+    void set(char side, int x, int y);
 
     Board();
-    Board(char data[]);
+    Board(char data_in[64]);
     ~Board();
-    Board *copy();
 
+    bool onBoard(int x, int y);
     bool isDone();
-    bool hasMoves(Side side);
-    bool checkMove(Move *m, Side side);
-    void doMove(Move *m, Side side);
-    int count(Side side);
-    int countBlack();
-    int countWhite();
-
+    bool hasMoves(char side);
+    bool checkMove(Move *m, char side);
+    void doMove(Move *m, char side);
+    int count(char side);
     void setBoard(char data[]);
-
     bool operator<(Board& other);
 };
 

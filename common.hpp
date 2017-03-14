@@ -1,8 +1,7 @@
 #pragma once
 
-enum Side { 
-    WHITE, BLACK
-};
+static const char WHITE = 'w';
+static const char BLACK = 'b';
 
 #define OTHER_SIDE(side)    \
     (side == WHITE ? BLACK : WHITE)
@@ -14,7 +13,7 @@ class Move {
 public:
     int x, y;
 
-    Move(int x_in, int y_in)
+    Move(int x_in = 0, int y_in = 0)
         : x(x_in),
           y(y_in)
     { }

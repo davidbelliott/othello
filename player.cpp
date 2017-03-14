@@ -22,7 +22,7 @@ const int Player::default_depth = 5;
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
  * within 30 seconds.
  */
-Player::Player(Side player_side_in)
+Player::Player(char player_side_in)
     : board(new Board()),
       erm(30),
       player_side(player_side_in),
@@ -48,7 +48,7 @@ void Player::set_board(Board* board_in)
     board = board_in;
 }
 
-void Player::get_possible_moves(Board* board, Side side, std::vector<Move>* moves)
+void Player::get_possible_moves(Board* board, char side, std::vector<Move>* moves)
 {
     *moves = { };
     for(int i = 0; i < 8; i++)
@@ -62,7 +62,7 @@ void Player::get_possible_moves(Board* board, Side side, std::vector<Move>* move
     }
 }
 
-int Player::negamax(Board* board, int depth, Side move_side, int a, int b, Move** m)
+int Player::negamax(Board* board, int depth, char move_side, int a, int b, Move** m)
 {
     // If passing move, start out with nullptr
     if(m)
@@ -72,7 +72,7 @@ int Player::negamax(Board* board, int depth, Side move_side, int a, int b, Move*
     if(depth == 0)
         return heuristic(board, move_side);
 
-    Side other_side = OTHER_SIDE(move_side);
+    char other_side = OTHER_SIDE(move_side);
     std::vector<Move> moves;
     get_possible_moves(board, move_side, &moves);
 
@@ -128,9 +128,9 @@ int Player::negamax(Board* board, int depth, Side move_side, int a, int b, Move*
 /**
  * @brief Returns a weighted sum of all heuristics.
  */
-int Player::heuristic(Board* board, Side move_side)
+int Player::heuristic(Board* board, char move_side)
 {
-    Side other_side = OTHER_SIDE(move_side);
+    char other_side = OTHER_SIDE(move_side);
     if(testingMinimax)
         return board->count(move_side) - board->count(other_side);
     else
@@ -150,7 +150,7 @@ int Player::heuristic(Board* board, Side move_side)
     }
 }
 
-int Player::get_weight(Board* board, Side othelloside, int i, int j)
+int Player::get_weight(Board* board, char othelloside, int i, int j)
 {
     return weights[i][j];
 }
@@ -178,6 +178,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
         negamax(board, 2, player_side, -INFINITY, INFINITY, &best_move);
     else if(msLeft == -1)
         negamax(board, default_depth, player_side, -INFINITY, INFINITY, &best_move);
+    else if(opening_book.count(board->data))
+        best_move = new Move(opening_book[board->data]);
     else
     {
         clock_t next_expected_ms = 0;
