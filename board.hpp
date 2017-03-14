@@ -27,6 +27,9 @@ public:
     void setBoard(char data[]);
 };
 
+void rotate_data(char data_in[64], char rotated[64]);
+Move rotate_move(Move move_in, int rotations);
+
 struct BoardCmp
 {
     bool operator()(const Board& a, const Board& b)

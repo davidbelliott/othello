@@ -1,4 +1,5 @@
 #include "player.hpp"
+#include "opening_book.hpp"
 #include <map>
 #include <limits>
 #include <vector>
@@ -28,6 +29,38 @@ Player::Player(char player_side_in)
       player_side(player_side_in),
       testingMinimax(false)   // Will be set to true in test_minimax.cpp.
 {
+    char test[] = "abcdefgh"
+                  "ijklmnop"
+                  "qrstuvwx"
+                  "yz012345"
+                  "01234567"
+                  "01234567"
+                  "01234567"
+                  "01234567";
+
+    Move move(4, 6);
+
+    for(int j = 0; j < 64; j++)
+    {
+        if(j % 8 == 0)
+            std::cerr << "\n";
+        std::cerr << test[j];
+    }
+    std::cerr << "\tMove:" << move.x << ", " << move.y << std::endl;
+    char rotated[64];
+    for(int i = 0; i < 4; i++)
+    {
+        rotate_data(test, rotated);
+        move = rotate_move(move, 1);
+        memcpy(test, rotated, 64);
+        for(int j = 0; j < 64; j++)
+        {
+            if(j % 8 == 0)
+                std::cerr << "\n";
+            std::cerr << test[j];
+        }
+        std::cerr << "\tMove:" << move.x << ", " << move.y << std::endl;
+    }
     //std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
@@ -176,23 +209,45 @@ Move *Player::doMove(Move *opponentsMove, int msLeft)
         negamax(board, 2, player_side, -INFINITY, INFINITY, &best_move);
     else if(msLeft == -1)
         negamax(board, default_depth, player_side, -INFINITY, INFINITY, &best_move);
-    /*else if(opening_book.count(board->data))
+    else 
     {
-        best_move = new Move(opening_book[board->data]);
-        std::cerr << "Used opening book to get move: " << best_move->x << ", " << best_move->y << std::endl;
-    }*/
-    else
-    {
-        clock_t next_expected_ms = 0;
-        int depth = 1;
-        for(; depth <= max_depth && ((clock() - begin_time + next_expected_ms) * 1000) / CLOCKS_PER_SEC < msLeft / erm; depth++)
+        bool found_opening_book_move = false;
+        char rotated[64];
+        char temp[64];
+
+        memcpy(rotated, board->data, 64);
+        for(int i = 0; i < 4; i++)
         {
-            clock_t iter_start_time = clock();
-            negamax(board, depth, player_side, -INFINITY, INFINITY, &best_move);
-            next_expected_ms = (clock() - iter_start_time) * 4;
+            if(opening_book.count(rotated))
+            {
+                Move rotated_move = rotate_move(opening_book[rotated], i);
+                if(board->checkMove(&rotated_move, player_side))
+                {
+                    best_move = new Move(rotate_move(opening_book[board->data], i));
+                    found_opening_book_move = true;
+                    break;
+                }
+            }
+            rotate_data(rotated, temp);
+            memcpy(rotated, temp, 64);
         }
-        std::cerr << "Ran to depth " << depth << " in " << (((clock() - begin_time) * 1000) / CLOCKS_PER_SEC) << " ms\n";
+
+        if(found_opening_book_move)
+            std::cerr << "Used opening book to get move: " << best_move->x << ", " << best_move->y << std::endl;
+        else
+        {
+            clock_t next_expected_ms = 0;
+            int depth = 1;
+            for(; depth <= max_depth && ((clock() - begin_time + next_expected_ms) * 1000) / CLOCKS_PER_SEC < msLeft / erm; depth++)
+            {
+                clock_t iter_start_time = clock();
+                negamax(board, depth, player_side, -INFINITY, INFINITY, &best_move);
+                next_expected_ms = (clock() - iter_start_time) * 4;
+            }
+            std::cerr << "Ran to depth " << depth << " in " << (((clock() - begin_time) * 1000) / CLOCKS_PER_SEC) << " ms\n";
+        }
     }
+
                 
     if(best_move)
         board->doMove(best_move, player_side);

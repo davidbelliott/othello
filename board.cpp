@@ -161,3 +161,26 @@ void Board::setBoard(char data[])
     for(int i = 0; i < 64; i++)
         this->data[i] = data[i];
 }
+
+void rotate_data(char data_in[64], char rotated[64])
+{
+    for(int x = 0; x < 8; x++)
+    {
+        for(int y = 0; y < 8; y++)
+        {
+            rotated[x+8*y] = data_in[(y+8*(7-x))];
+        }
+    }
+}
+
+Move rotate_move(Move move_in, int rotations)
+{
+    Move rotated = move_in;
+    for(int i = 0; i < rotations; i++)
+    {
+        Move temp(7 - rotated.y, rotated.x);
+        rotated = temp;
+    }
+    return rotated;
+}
+

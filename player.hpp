@@ -1,6 +1,5 @@
 #pragma once
 
-//#include "opening_book.hpp"
 #include "board.hpp"
 #include "othello_node.hpp"
 #include "common.hpp"
