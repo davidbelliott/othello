@@ -1,6 +1,6 @@
 CC          = g++
 CFLAGS      = -std=c++11 -Wall -pedantic -O3
-OBJS        = player.o board.o
+OBJS        = player.o board.o opening_book.o
 PLAYERNAME  = presbyterian_ghostbusters
 
 all: $(PLAYERNAME) testgame

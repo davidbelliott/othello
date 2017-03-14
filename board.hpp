@@ -17,6 +17,7 @@ public:
     bool onBoard(int x, int y);
 
     Board();
+    Board(char data[]);
     ~Board();
     Board *copy();
 
@@ -29,6 +30,8 @@ public:
     int countWhite();
 
     void setBoard(char data[]);
+
+    bool operator<(Board& other);
 };
 
 #endif

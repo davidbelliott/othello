@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common.hpp"
+#include "opening_book.hpp"
 #include "board.hpp"
+#include "common.hpp"
 #include <iostream>
 #include <vector>
 

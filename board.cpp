@@ -12,6 +12,12 @@ Board::Board() {
     black.set(3 + 8 * 4);
 }
 
+Board::Board(char data[])
+    : Board()
+{
+    setBoard(data);
+}
+
 /*
  * Destructor for the board.
  */
